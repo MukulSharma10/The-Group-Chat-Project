@@ -1,30 +1,27 @@
 import express from 'express'
-import WebSocket, { WebSocketServer } from 'ws'
+import http from 'http'
+import path from 'path'
+import { Server } from 'socket.io'
 
 const app = express()
-const port = 3000
+const server = http.createServer(app)
+const io = new Server(server)
 
-const server = app.listen(port,()=>{
-    console.log(`Server running on port ${port}`)
+//Socket.io handles socket connection
+io.on('connection', (socket)=>{
+    socket.on('user-message', (message) =>{
+        console.log("A new User message", message)
+        io.emit("message", message)
+    })
 })
 
-const wss = new WebSocketServer({server})
+//Express handles http requests
+app.use(express.static(path.resolve("./public")))
 
-wss.on('connection', (ws)=>{
-    console.log('New client connected')
+app.get('/', (req, res)=>{
+    return res.sendFile('/public/index.html')
+})
 
-    ws.on('message', (message)=>{
-        console.log(`Received: ${message}`)
-
-        //Broadcast the message to all connected clients
-        wss.clients.forEach(client =>{
-            if (client.readyState === WebSocket.OPEN){
-                client.send(message)
-            }
-        })
-    })
-
-    ws.on('close', ()=>{
-        console.log('Client disconnected')
-    })
+server.listen(9000, ()=>{
+    console.log('Server started at 9000')
 })
