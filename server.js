@@ -7,11 +7,18 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-//Socket.io handles socket connection
+//Socket.io handles web socket connections
 io.on('connection', (socket)=>{
+    console.log('A user connected!')
+    io.emit('message', 'A user has connected')
     socket.on('user-message', (message) =>{
         console.log("A new User message", message)
         io.emit("message", message)
+    })
+
+    socket.on('disconnect', ()=>{
+        console.log("A user disconnected")
+        io.emit('message', 'A user has disconnected')
     })
 })
 
