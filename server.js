@@ -7,18 +7,29 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
+let connectedUsers = 0
+const MAX_USERS = 12
+
 //Socket.io handles web socket connections
 io.on('connection', (socket)=>{
-    console.log('A user connected!')
-    io.emit('message', 'A user has connected')
+    if (connectedUsers >= MAX_USERS){
+        socket.emit('room full',"The chat room is full. Please try again later")
+        socket.disconnect()
+        return
+    }
+
+    connectedUsers++
+    const nickname = `Juror #${connectedUsers}`
+
+    io.emit('message',  `${nickname} has connected`)
     socket.on('user-message', (message) =>{
-        console.log("A new User message", message)
+        console.log(`${nickname} wrote: `, message)
         io.emit("message", message)
     })
 
     socket.on('disconnect', ()=>{
-        console.log("A user disconnected")
-        io.emit('message', 'A user has disconnected')
+        console.log(`${nickname} has disconnected`)
+        io.emit('message', `${nickname} has disconnected`)
     })
 })
 

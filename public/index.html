@@ -11,6 +11,7 @@
     <button id="sendBtn">Send</button>
 
     <div id="messages"></div>
+    <div id="error" style="color:red"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -18,6 +19,13 @@
         const sendBtn = document.getElementById("sendBtn")
         const messageInput = document.getElementById("message")
         const allMessages = document.getElementById("messages")
+        const errorDiv = document.getElementById('error')
+        
+        //Handles events when the room reaches its maximum capacity
+        socket.on('room full', (msg)=>{
+            errorDiv.textContent = msg
+            messageInput.disabled = true
+        })
 
         socket.on('message', (message)=>{
             const p = document.createElement('p')
