@@ -7,7 +7,8 @@
 </head>
 <body>
     <h1>Group Chat App</h1>
-    <input type="text" id="message" placeholder="Enter your message"/>
+    <div id="online-users">Users online: 0</div>
+    <input type="text" id="message" placeholder="Type a message..."/>
     <button id="sendBtn">Send</button>
 
     <div id="messages"></div>
@@ -20,11 +21,16 @@
         const messageInput = document.getElementById("message")
         const allMessages = document.getElementById("messages")
         const errorDiv = document.getElementById('error')
+        const onlineUsersDiv = document.getElementById('online-users')
         
         //Handles events when the room reaches its maximum capacity
         socket.on('room full', (msg)=>{
             errorDiv.textContent = msg
             messageInput.disabled = true
+        })
+
+        socket.on('update user count', (count)=>{
+            onlineUsersDiv.textContent = `Users online: ${count}`
         })
 
         socket.on('message', (message)=>{

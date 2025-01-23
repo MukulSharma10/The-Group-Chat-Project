@@ -21,15 +21,20 @@ io.on('connection', (socket)=>{
     connectedUsers++
     const nickname = `Juror #${connectedUsers}`
 
-    io.emit('message',  `${nickname} has connected`)
+    //Broadcast current number of online users
+    io.emit('update user count', connectedUsers)
+
+    io.emit('message',  `${nickname} has joined the chat`)
     socket.on('user-message', (message) =>{
         console.log(`${nickname} wrote: `, message)
-        io.emit("message", message)
+        io.emit("message", `${nickname}: ${message}`)
     })
 
     socket.on('disconnect', ()=>{
+        connectedUsers--
         console.log(`${nickname} has disconnected`)
-        io.emit('message', `${nickname} has disconnected`)
+        io.emit('update user count', connectedUsers)
+        io.emit('message', `${nickname} has left the chat`)
     })
 })
 
