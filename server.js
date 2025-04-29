@@ -24,11 +24,21 @@ let connectedUsers = 0
 const MAX_USERS = 12
 
 //Socket.io handles web socket connections
-io.on('connection', (socket)=>{
+io.on('connection', async(socket)=>{
     if (connectedUsers >= MAX_USERS){
         socket.emit('room full',"The chat room is full. Please try again later")
         socket.disconnect()
         return
+    }
+
+    try{
+        const result = await pool.query(
+            'SELECT sender, content, timestamp FROM messages ORDER BY timestamp ASC LIMIT 25'
+        )
+        const history = result.rows
+        socket.emit('chat history', history)
+    } catch(err){
+        console.error('Error fetching chat history: ', err)
     }
 
     connectedUsers++
