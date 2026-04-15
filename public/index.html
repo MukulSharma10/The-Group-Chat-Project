@@ -7,13 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Group Chat App</h1>
-    <div id="online-users">Users online: 0</div>
-    <input type="text" id="message" placeholder="Type a message..."/>
-    <button id="sendBtn">Send</button>
+    <div class="app-shell">
+        <header class="top-bar">
+            <div>
+                <h1>Group Chat App</h1>
+                <p id="online-users">Users online: 0</p>
+            </div>
+            <div id="error" class="error"></div>
+        </header>
 
-    <div id="messages"></div>
-    <div id="error" style="color:red"></div>
+        <main class="chat-panel">
+            <div id="messages" class="messages" aria-live="polite"></div>
+        </main>
+
+        <footer class="composer">
+            <label for="message" class="sr-only">Type your message</label>
+            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" />
+            <button id="sendBtn" type="button">Send</button>
+        </footer>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -23,35 +35,40 @@
         const allMessages = document.getElementById("messages")
         const errorDiv = document.getElementById('error')
         const onlineUsersDiv = document.getElementById('online-users')
-        
-        //Handles events when the room reaches its maximum capacity
-        socket.on('room full', (msg)=>{
+
+        socket.on('room full', (msg) => {
             errorDiv.textContent = msg
             messageInput.disabled = true
         })
 
-        socket.on('update user count', (count)=>{
+        socket.on('update user count', (count) => {
             onlineUsersDiv.textContent = `Users online: ${count}`
         })
 
-        socket.on('chat history', (history)=>{
-            history.forEach(msg =>{
-                const {sender, content} = msg
+        socket.on('chat history', (history) => {
+            history.forEach(msg => {
+                const { sender, content } = msg
                 const div = document.createElement('div')
+                div.className = 'message bubble received'
                 div.textContent = `${sender}: ${content}`
-                document.getElementById('messages').appendChild(div)
+                allMessages.appendChild(div)
             })
         })
 
-        socket.on('message', (message)=>{
+        socket.on('message', (message) => {
             const p = document.createElement('p')
             p.innerText = message
+            p.className = 'message bubble received'
             allMessages.appendChild(p)
+            allMessages.scrollTop = allMessages.scrollHeight
         })
 
-        sendBtn.addEventListener("click", (e)=>{
-            const message = messageInput.value
+        sendBtn.addEventListener("click", () => {
+            const message = messageInput.value.trim()
+            if (!message) return
             socket.emit('user-message', message)
+            messageInput.value = ''
+            messageInput.focus()
         })
     </script>
 </body>
